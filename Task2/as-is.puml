@@ -1,0 +1,30 @@
+@startuml RetailCore_Context
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title RetailCore — C4 Context 
+
+Person(customer, "Клиент", "Оформляет заказы и просматривает их состояние")
+Person(support, "Оператор поддержки", "Разбирает обращения и выполняет ручные проверки и корректировки")
+
+System(retailCore, "RetailCore", "Платформа оформления и обработки заказов: клиентские каналы, расчёт цены и промо, управление статусами, платёжные и логистические интеграции, инструменты поддержки")
+
+System_Ext(marketplaces, "Маркетплейсы", "Внешние площадки, передающие заказы, обновления и статусы")
+System_Ext(paymentProviders, "Платёжные провайдеры", "Внешние системы, обеспечивающие платёжные операции")
+System_Ext(deliveryPartners, "Службы доставки", "Внешние системы логистических партнёров")
+System_Ext(bi, "BI / отчёты", "Внутренняя система компании за границей платформы RetailCore")
+
+Person(businessUsers, "Бизнес-пользователи", "Используют управленческие отчёты")
+
+Rel(customer, retailCore, "Оформляет заказы и просматривает статусы через интернет-магазин и мобильные каналы")
+Rel(support, retailCore, "Разбирает обращения, проверяет и корректирует статусы через инструменты поддержки")
+Rel(marketplaces, retailCore, "Передаёт заказы, обновления и статусы")
+Rel(retailCore, paymentProviders, "Создаёт платёжные сессии")
+Rel(retailCore, deliveryPartners, "Резервирует доставку и выполняет партнёрские логистические операции")
+Rel(bi, retailCore, "Читает данные для отчётности")
+
+Rel(businessUsers, bi, "Получает управленческие отчёты")
+
+@enduml
