@@ -1,0 +1,47 @@
+@startuml RetailCore_TO_BE_Context
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_LEFT_RIGHT()
+LAYOUT_WITH_LEGEND()
+
+title RetailCore — целевое intermediate-состояние
+
+Person(customer, "Клиент", "Оформляет заказы через сайт, мобильное приложение и маркетплейсы")
+Person(support, "Операторы поддержки", "Работают с карточкой заказа, используют UI и чат-бот")
+Person(business, "Бизнес-заказчик", "Определяет приоритеты продукта")
+
+System(orderCore, "Order-Core Service (Java)", "Приём заказа, запись в Oracle и публикация событий")
+
+System_Ext(paymentGateway, "Payment Gateway (External)", "Платёжные провайдеры: Stripe, PayPal и другие")
+
+System(promoEngine, "PromoEngine Service (Java/Python)", "Расчёт скидок и акций без PL/SQL fallback")
+System(routingEngine, "RoutingEngine Service (Java/Python)", "Выбор партнёра и маршрута доставки, работа со справочниками")
+System(oracle, "Oracle DB (19c)", "Таблицы ORDERS, OUTBOX и справочники")
+System(orderStatus, "Order Status Service (Java)", "Управление состоянием заказа, state machine и публикация событий")
+System(eventBus, "Event Bus (Kafka-like)", "Шина бизнес-событий Order")
+
+Rel_R(customer, orderCore, "Создаёт заказ", "REST/HTTPS")
+Rel_R(support, orderCore, "Просматривает и изменяет статус", "REST/GraphQL")
+Rel_R(business, orderCore, "Управляет конфигурациями и правилами", "Admin UI / DB")
+
+Rel_R(orderCore, paymentGateway, "Создаёт платёжную сессию", "REST, synchronous")
+Rel_R(orderCore, promoEngine, "Запрашивает расчёт скидки", "REST, synchronous")
+Rel_R(orderCore, routingEngine, "Запрашивает выбор маршрута", "REST")
+Rel_R(orderCore, oracle, "Записывает заказ и outbox", "JDBC")
+Rel_R(orderCore, orderStatus, "Инициирует стартовый статус New", "Event")
+
+Rel_R(orderCore, eventBus, "Публикует OrderCreated, OrderValidated и другие события")
+Rel_R(promoEngine, eventBus, "Публикует PromoApplied")
+Rel_R(routingEngine, eventBus, "Публикует RoutingSelected")
+Rel_R(orderStatus, eventBus, "Публикует OrderStatusChanged")
+
+Lay_D(customer, support)
+Lay_D(support, business)
+
+Lay_D(paymentGateway, promoEngine)
+Lay_D(promoEngine, routingEngine)
+Lay_D(routingEngine, oracle)
+Lay_D(oracle, orderStatus)
+
+@enduml
